@@ -1,0 +1,67 @@
+{% load static lead_links %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ lead.company_name }} — Lead details</title>
+    <link rel="stylesheet" href="{% static 'leads/css/dashboard.css' %}">
+</head>
+<body>
+<main class="container lead-detail">
+    <header class="section-header">
+        <div><a href="{% url 'leads:dashboard' %}" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.35rem 0.75rem; margin-bottom: 0.5rem; display: inline-block;">Back to Dashboard</a><h1>{{ lead.company_name }}</h1><p>{{ lead.niche }} · {{ lead.location }} {{ lead.country }}</p></div>
+        <form method="post" action="{% url 'leads:reaudit' lead.pk %}">{% csrf_token %}<button class="btn btn-primary" type="submit" {% if not lead.website %}disabled{% endif %}>Re-audit website</button></form>
+    </header>
+    {% for message in messages %}<p class="hub-card" role="status">{{ message }}</p>{% endfor %}
+    <section class="hub-card">
+        <h2>{{ lead.get_audit_status_display }}</h2>
+        <p>Last checked: {{ lead.last_audited_at|date:'Y-m-d H:i T'|default:'Not yet checked with evidence' }}.</p>
+        {% if lead.audit_status == 'unreviewed' %}<p>This record predates evidence tracking. Re-audit it before relying on its technical findings or old pitch.</p>{% else %}
+        <p>Contact coverage in this crawl: {{ lead.audit_report.contact_coverage|default:0 }}% of six categories. Coverage measures completeness, not accuracy.</p>{% endif %}
+        {% if lead.audit_report.missing_fields %}<p>Not found in this crawl: {{ lead.audit_report.missing_fields|join:', ' }}.</p>{% endif %}
+        {% if lead.audit_report.retained_fields %}<p>Previously saved information retained; not all values were reconfirmed: {{ lead.audit_report.retained_fields|join:', ' }}.</p>{% endif %}
+        {% for warning in lead.audit_report.warnings %}<p>{{ warning }}</p>{% endfor %}
+    </section>
+    <div class="detail-grid">
+        <section class="hub-card"><h2>Business information</h2>
+            <dl><dt>Website</dt><dd>{% if lead.website %}<a href="{{ lead.website|safe_external_url }}" target="_blank" rel="noopener noreferrer">{{ lead.website }}</a>{% else %}No website listed{% endif %}</dd>
+            <dt>Description</dt><dd>{{ lead.description|default:'Not found' }}</dd>
+            <dt>Addresses</dt><dd>{% for address in lead.addresses %}<p>{{ address }}</p>{% empty %}{{ lead.address|default:'Not found' }}{% endfor %}</dd>
+            <dt>Opening hours (as published)</dt><dd>{% for hours in lead.opening_hours %}<p>{{ hours }}</p>{% empty %}Not found{% endfor %}</dd>
+            <dt>Website-published rating</dt><dd>{% if lead.audit_report.rating %}{{ lead.audit_report.rating.value }}{% if lead.audit_report.rating.best %} / {{ lead.audit_report.rating.best }}{% else %} (scale unspecified){% endif %}. Review count: {{ lead.audit_report.rating.review_count|default_if_none:'Not reported' }}. Self-reported by the website, not independently verified.{% else %}Not found in this crawl{% endif %}</dd>
+            <dt>Discovery source</dt><dd>{{ lead.source_name|default:'Not recorded' }} {% if lead.source_url %}<a href="{{ lead.source_url|safe_external_url }}" target="_blank" rel="noopener noreferrer">View source</a>{% endif %}</dd>
+            <dt>Pipeline status</dt><dd>{{ lead.get_status_display }}</dd><dt>Notes</dt><dd>{{ lead.notes|default:'None'|linebreaksbr }}</dd></dl>
+        </section>
+        <section class="hub-card"><h2>Contact information</h2>
+            <dl><dt>Primary email</dt><dd>{{ lead.primary_email|default:'Not found' }}</dd>
+            <dt>All emails</dt><dd>{% for email in lead.all_emails %}<p>{{ email }}</p>{% empty %}Not found{% endfor %}</dd>
+            <dt>Phone numbers</dt><dd>{% for phone in lead.all_phones %}<p>{{ phone }}</p>{% empty %}{{ lead.phone|default:'Not found' }}{% endfor %}</dd>
+            <dt>Email domain DNS</dt><dd>{{ lead.audit_report.email_dns.status|default:'Not checked' }}. This does not verify that a mailbox exists or accepts messages.</dd>
+            <dt>Social profiles linked by the website</dt><dd>
+                {% if lead.linkedin_url %}<p><a href="{{ lead.linkedin_url|safe_external_url }}" target="_blank" rel="noopener noreferrer">LinkedIn</a></p>{% endif %}
+                {% if lead.facebook_url %}<p><a href="{{ lead.facebook_url|safe_external_url }}" target="_blank" rel="noopener noreferrer">Facebook</a></p>{% endif %}
+                {% if lead.instagram_url %}<p><a href="{{ lead.instagram_url|safe_external_url }}" target="_blank" rel="noopener noreferrer">Instagram</a></p>{% endif %}
+                {% if lead.twitter_url %}<p><a href="{{ lead.twitter_url|safe_external_url }}" target="_blank" rel="noopener noreferrer">X / Twitter</a></p>{% endif %}
+            </dd></dl>
+        </section>
+    </div>
+    <section class="hub-card"><h2>Technical findings</h2>
+        <dl><dt>Android app</dt><dd>{{ lead.get_android_status_display }}. {{ lead.audit_report.checks.android.evidence }} {% if lead.audit_report.checks.android.url %}<a href="{{ lead.audit_report.checks.android.url|safe_external_url }}" target="_blank" rel="noopener noreferrer">Checked source</a>{% endif %} {% if lead.android_status == 'detected' %}<a href="{{ lead.android_app_url|safe_external_url }}" target="_blank" rel="noopener noreferrer">Website-linked app</a>{% endif %}</dd>
+        <dt>Chat widget</dt><dd>{{ lead.get_chatbot_status_display }}. {% if lead.chatbot_status == 'detected' %}{{ lead.detected_chat_widget }}.{% endif %} {{ lead.audit_report.checks.chatbot.evidence }} {% if lead.audit_report.checks.chatbot.url %}<a href="{{ lead.audit_report.checks.chatbot.url|safe_external_url }}" target="_blank" rel="noopener noreferrer">Checked source</a>{% endif %}</dd>
+        <dt>Server / response sample</dt><dd>{% if lead.audit_report.checks.server.status == 'measured' %}{{ lead.server_type }} · {{ lead.server_response_time_ms }}ms · HTTPS: {{ lead.ssl_active|yesno:'Yes,No' }}{% else %}Unknown in the latest check{% endif %}. {{ lead.audit_report.checks.server.evidence }}</dd>
+        <dt>CMS / framework signature</dt><dd>{{ lead.audit_report.cms|default:'Unknown' }}</dd>
+        <dt>Industry suggestion</dt><dd>{{ lead.cv_opportunity|default:'No specific suggestion' }}. This is an idea, not a confirmed need.</dd>
+        <dt>Opportunity score</dt><dd>{% if lead.audit_status == 'unreviewed' %}Needs re-audit{% else %}{{ lead.lead_score }}/100 (heuristic){% endif %}</dd></dl>
+        <p>“Not detected” means no matching evidence in the pages checked. JavaScript-only content, blocked pages, unpublished contacts and unrelated app listings cannot be verified by this scan.</p>
+    </section>
+    <section class="hub-card"><h2>Source evidence</h2><p>High source strength means an explicit field or contact link; medium means text extraction. Neither is independent verification. Retained rows are from an earlier check.</p>
+        <div class="table-wrap"><table><thead><tr><th>Field</th><th>Value</th><th>Method / strength</th><th>Source / observed</th></tr></thead><tbody>
+        {% for item in lead.audit_report.evidence %}<tr><td>{{ item.field }}</td><td>{{ item.value }}</td><td>{{ item.method }} · {{ item.confidence }}{% if item.retained %} · retained{% endif %}</td><td><a href="{{ item.url|safe_external_url }}" target="_blank" rel="noopener noreferrer">Source page</a><br>{{ item.observed_at }}</td></tr>{% empty %}<tr><td colspan="4">No evidence recorded yet.</td></tr>{% endfor %}
+        </tbody></table></div>
+    </section>
+    <section class="hub-card"><h2>Pages checked</h2><ul>{% for page in lead.audit_report.pages %}<li><a href="{{ page.url|safe_external_url }}" target="_blank" rel="noopener noreferrer">{{ page.url }}</a> — {{ page.status }}{% if page.reason %}: {{ page.reason }}{% endif %}</li>{% empty %}<li>No website pages checked.</li>{% endfor %}</ul></section>
+    <section class="hub-card"><h2>Draft outreach</h2><p>Review the evidence and edit this draft before using it.</p><h3>{{ lead.pitch_subject }}</h3><div class="pitch-preview">{{ lead.pitch_email }}</div></section>
+</main>
+</body>
+</html>

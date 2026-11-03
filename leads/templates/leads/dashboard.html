@@ -1,0 +1,28 @@
+{% load static lead_links %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevLead OS — Software Agency B2B Lead Generator & Tech Gap Auditor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'leads/css/dashboard.css' %}">
+</head>
+<body data-prospect-url="{% url 'leads:api_prospect' %}" data-audit-url="{% url 'leads:api_audit' %}" data-task-url="{% url 'leads:api_task_status' 'TASK_ID' %}" data-status-url="{% url 'leads:api_update_status' 0 %}">
+    <div hidden>{% csrf_token %}</div>
+
+    {% include 'leads/partials/navigation.html' %}
+    <div class="container">
+
+    {% include 'leads/partials/metrics.html' %}
+    {% include 'leads/partials/prospecting.html' %}
+    {% include 'leads/partials/lead_table.html' %}
+
+    </div>
+
+    {% include 'leads/partials/pitch_modal.html' %}
+    <script src="{% static 'leads/js/dashboard.js' %}" defer></script>
+</body>
+</html>

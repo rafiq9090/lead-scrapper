@@ -1,0 +1,25 @@
+    <!-- Top Navigation -->
+    <header class="topbar">
+        <div class="logo-wrap">
+            <div class="logo-badge">DL</div>
+            <div class="logo-text">
+                <h1>DevLead OS</h1>
+                <p>B2B Software & AI Agency Lead Generator</p>
+            </div>
+        </div>
+        <div class="top-actions">
+            <button id="theme-toggle-btn" class="btn btn-secondary" onclick="toggleTheme()" title="Switch theme" style="padding: 0.45rem 0.85rem;">
+                Light
+            </button>
+            <a href="{% url 'leads:export_csv' %}?{{ filter_query }}" class="btn btn-secondary">
+                Export CSV
+            </a>
+            <a href="{% url 'leads:export_excel' %}?{{ filter_query }}" class="btn btn-secondary">
+                Export Excel
+            </a>
+            <a href="/admin/leads/lead/" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+                Admin Panel
+            </a>
+        </div>
+    </header>
+

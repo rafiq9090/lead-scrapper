@@ -1,0 +1,34 @@
+        <!-- Top Metrics Cards -->
+        <section class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-label">TOTAL DISCOVERED</div>
+                <div class="metric-value color-primary">{{ total_leads }}</div>
+                <div class="metric-sub">Prospective client companies</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">NO WEBSITE LISTED</div>
+                <div class="metric-value color-rose">{{ missing_website_count }}</div>
+                <div class="metric-sub">No website link in source listing</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">APP NOT DETECTED</div>
+                <div class="metric-value color-rose">{{ missing_android_count }}</div>
+                <div class="metric-sub">Pitch Custom Android Apps</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">CHAT NOT DETECTED</div>
+                <div class="metric-value color-amber">{{ missing_chatbot_count }}</div>
+                <div class="metric-sub">Pitch AI 24/7 Sales Agents</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">HIGH VALUE (70+)</div>
+                <div class="metric-value color-secondary">{{ high_opp_count }}</div>
+                <div class="metric-sub">Heuristic opportunity score</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">IN PIPELINE</div>
+                <div class="metric-value color-emerald">{{ contacted_count }}</div>
+                <div class="metric-sub">Contacted / Meetings</div>
+            </div>
+        </section>
+
